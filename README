@@ -8,15 +8,13 @@ background of the page, for a pseudo-transparent appearance.
 In its simplest form, webwidget takes a single argument which is used as
 the URL to load. The default size for the widget is 250x120. Other
 options allow customising the display:
-  --height H
-  --width W
-    Set the height or width of the widget to the given number of pixels.
-  --role TEXT
-    Set the WM_WINDOW_ROLE property to allow the window manager to
-    identify the window uniquely. This is useful when you have multiple
-    widgets running and want them to be separately positioned.
-  --decorate
-    Show the window manager decorations (which are usually hidden).
+  --desktop-background PATH
+    Use PATH as the desktop background image. This image must be the
+    same size as the desktop. The widget will display the part of the
+    image behind itself in the background of the web page when this
+    option is specified. If the widget window is moved, the background
+    image will update. If the image itself changes it will be reloaded
+    within a few seconds.
   --allow-shell
     Permit the extension "shell:" protocol, which will trigger system
     command execution when navigated to. If this option is given, this
@@ -25,13 +23,19 @@ options allow customising the display:
     will generate a link that, when clicked, pops up a system message
     box with the given message. If you do not have total control over
     the web page being displayed, this presents a security problem.
-  --desktop-background PATH
-    Use PATH as the desktop background image. This image must be the
-    same size as the desktop. The widget will display the part of the
-    image behind itself in the background of the web page when this
-    option is specified. If the widget window is moved, the background
-    image will update. If the image itself changes it will be reloaded
-    within a few seconds.
+  --geometry GEOM
+    Set the size and/or position of the window according to GEOM, a
+    standard X geometry specification. This has the format
+      WIDTHxHEIGHT+LEFT+TOP
+    Either of the size and position can be omitted. If the position
+    coordinates are negative they are measured from the other side of
+    the screen.
+  --role TEXT
+    Set the WM_WINDOW_ROLE property to allow the window manager to
+    identify the window uniquely. This is useful when you have multiple
+    widgets running and want them to be separately positioned.
+  --decorate
+    Show the window manager decorations (which are usually hidden).
 
 Consult your window manager documentation for information on how to
 position the widget, both automatically at startup and while running.

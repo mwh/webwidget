@@ -185,8 +185,7 @@ int help() {
     puts("");
     puts("  --desktop-background PATH  Show the right part of PATH in "
             "the background");
-    puts("  --width WIDTH              Make the widget WIDTH pixels wide");
-    puts("  --height HEIGHT            Make the widget HEIGHT pixels high");
+    puts("  --geometry GEOM            Set the size and position from GEOM");
     puts("  --role TEXT                Set WM_WINDOW_ROLE to TEXT");
     puts("  --decorate                 Show window manager decorations");
     puts("  --allow-shell              Permit shell: protocol command "
@@ -212,17 +211,14 @@ int main (int argc, char **argv) {
     GtkAccelGroup *accelgroup;
     GClosure *closure;
 
-    int width = 250;
-    int height = 120;
     bool undecorated = true;
     char *role = NULL;
+    char *geometry = "250x120";
     for (int i=1; i<argc; i++) {
         if (strcmp(argv[i], "--desktop-background") == 0)
             background_path = argv[++i];
-        else if (strcmp(argv[i], "--width") == 0)
-            width = atoi(argv[++i]);
-        else if (strcmp(argv[i], "--height") == 0)
-            height = atoi(argv[++i]);
+        else if (strcmp(argv[i], "--geometry") == 0)
+            geometry = argv[++i];
         else if (strcmp(argv[i], "--role") == 0)
             role = argv[++i];
         else if (strcmp(argv[i], "--allow-shell") == 0)
@@ -274,17 +270,28 @@ int main (int argc, char **argv) {
             WEBKIT_CACHE_MODEL_DOCUMENT_VIEWER);
 
     webkit_web_view_load_uri (WEBKIT_WEB_VIEW (webkit), uri);
+    gtk_widget_show_all(webkit);
 
     // Set up widget window
-    gtk_widget_set_size_request (GTK_WIDGET(window), width, height);
-    gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
     if (undecorated)
         gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
     if (role)
         gtk_window_set_role(GTK_WINDOW(window), role);
  
-    gtk_widget_show_all(window);
+    if (!gtk_window_parse_geometry(GTK_WINDOW(window), geometry)) {
+        fprintf(stderr, "webwidget: could not parse geometry %s\n", geometry);
+        exit(1);
+    }
+    int w, h;
+    gtk_window_get_default_size(GTK_WINDOW(window), &w, &h);
+    // If no size request is set, a non-resizable window becomes 1x1.
+    if (w > 0 && h > 0)
+        gtk_widget_set_size_request(window, w, h);
+    else
+        gtk_widget_set_size_request(window, 250, 120);
+    gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
  
+    gtk_widget_show_all(window);
     // We check whether the desktop background has changed every 5 seconds
     if (background_path)
         g_timeout_add_seconds(5, timeout, NULL);
