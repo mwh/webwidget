@@ -157,6 +157,7 @@ int help() {
             "the background");
     puts("  --width WIDTH              Make the widget WIDTH pixels wide");
     puts("  --height HEIGHT            Make the widget HEIGHT pixels high");
+    puts("  --decorate                 Show window manager decorations");
     puts("  --help                     Display this help and exit");
     puts("  --version                  Print version information and exit");
     puts("");
@@ -180,6 +181,7 @@ int main (int argc, char **argv) {
 
     int width = 250;
     int height = 120;
+    bool undecorated = true;
     for (int i=1; i<argc; i++) {
         if (strcmp(argv[i], "--desktop-background") == 0)
             background_path = argv[++i];
@@ -187,6 +189,8 @@ int main (int argc, char **argv) {
             width = atoi(argv[++i]);
         else if (strcmp(argv[i], "--height") == 0)
             height = atoi(argv[++i]);
+        else if (strcmp(argv[i], "--decorate") == 0)
+            undecorated = false;
         else if (strcmp(argv[i], "--version") == 0)
             exit(version());
         else if (strcmp(argv[i], "--help") == 0)
@@ -231,7 +235,8 @@ int main (int argc, char **argv) {
     // Set up widget window
     gtk_widget_set_size_request (GTK_WIDGET(window), width, height);
     gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
-    gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+    if (undecorated)
+        gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
  
     gtk_widget_show_all(window);
  

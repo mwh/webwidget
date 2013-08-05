@@ -11,6 +11,8 @@ options allow customising the display:
   --height H
   --width W
     Set the height or width of the widget to the given number of pixels.
+  --decorate
+    Show the window manager decorations (which are usually hidden).
   --desktop-background PATH
     Use PATH as the desktop background image. This image must be the
     same size as the desktop. The widget will display the part of the
