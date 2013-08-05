@@ -1,0 +1,24 @@
+webwidget - display a web page like a desktop widget
+
+webwidget loads a URL into a specialised WebKit browser and displays it
+in a small window without borders, like a desktop widget. Optionally, it
+can display the occluded part of the desktop background image in the
+background of the page, for a pseudo-transparent appearance.
+
+In its simplest form, webwidget takes a single argument which is used as
+the URL to load. The default size for the widget is 250x120. Other
+options allow customising the display:
+  --height H
+  --width W
+    Set the height or width of the widget to the given number of pixels.
+  --desktop-background PATH
+    Use PATH as the desktop background image. This image must be the
+    same size as the desktop. The widget will display the part of the
+    image behind itself in the background of the web page when this
+    option is specified. If the widget window is moved, the background
+    image will update. If the image itself changes it will be reloaded
+    within a few seconds.
+
+Consult your window manager documentation for information on how to
+position the widget, both automatically at startup and while running.
+Alt-drag is a common way to move undecorated windows.
