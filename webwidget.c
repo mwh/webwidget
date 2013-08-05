@@ -187,6 +187,7 @@ int help() {
             "the background");
     puts("  --width WIDTH              Make the widget WIDTH pixels wide");
     puts("  --height HEIGHT            Make the widget HEIGHT pixels high");
+    puts("  --role TEXT                Set WM_WINDOW_ROLE to TEXT");
     puts("  --decorate                 Show window manager decorations");
     puts("  --allow-shell              Permit shell: protocol command "
             "execution");
@@ -214,6 +215,7 @@ int main (int argc, char **argv) {
     int width = 250;
     int height = 120;
     bool undecorated = true;
+    char *role = NULL;
     for (int i=1; i<argc; i++) {
         if (strcmp(argv[i], "--desktop-background") == 0)
             background_path = argv[++i];
@@ -221,6 +223,8 @@ int main (int argc, char **argv) {
             width = atoi(argv[++i]);
         else if (strcmp(argv[i], "--height") == 0)
             height = atoi(argv[++i]);
+        else if (strcmp(argv[i], "--role") == 0)
+            role = argv[++i];
         else if (strcmp(argv[i], "--allow-shell") == 0)
             allow_shell = true;
         else if (strcmp(argv[i], "--decorate") == 0)
@@ -276,6 +280,8 @@ int main (int argc, char **argv) {
     gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
     if (undecorated)
         gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+    if (role)
+        gtk_window_set_role(GTK_WINDOW(window), role);
  
     gtk_widget_show_all(window);
  
