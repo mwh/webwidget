@@ -41,6 +41,8 @@ int background_count;
 char background_setter[2048];
 int background_x, background_y;
 time_t background_mtime;
+char *background_tint;
+bool adjust_text;
 
 char *uri = "webwidget:";
 
@@ -175,8 +177,32 @@ gboolean handle_policy(WebKitWebView *web_view,
 // Re-run the background setter when the page loads.
 void load_changed(WebKitWebView  *web_view,
         WebKitLoadEvent load_event, gpointer user_data) {
-    if (load_event == WEBKIT_LOAD_FINISHED)
+    if (load_event == WEBKIT_LOAD_FINISHED) {
         setbg();
+        char buf[256];
+        if (background_tint) {
+            webkit_web_view_run_javascript(WEBKIT_WEB_VIEW(webkit),
+                "var $webwidget$ = document.createElement('div');"
+                "$webwidget$.style.position = 'fixed';"
+                "$webwidget$.style.top = 0;"
+                "$webwidget$.style.left = 0;"
+                "$webwidget$.style.right = 0;"
+                "$webwidget$.style.bottom = 0;"
+                "$webwidget$.style.zIndex = -1;"
+                "$webwidget$.style.opacity = 0.25;"
+                "document.body.appendChild($webwidget$);", NULL, NULL, NULL);
+            sprintf(buf, "$webwidget$.style.background = '%s';",
+                    background_tint);
+            webkit_web_view_run_javascript(WEBKIT_WEB_VIEW(webkit),
+                buf, NULL, NULL, NULL);
+        }
+        if (adjust_text) {
+            sprintf(buf, "document.body.style.color = '%s';",
+                    (background_tint ? strcmp(background_tint, "white") : true) ? "white" : "black");
+            webkit_web_view_run_javascript(WEBKIT_WEB_VIEW(webkit),
+                buf, NULL, NULL, NULL);
+        }
+    }
 }
 
 int help() {
@@ -185,6 +211,9 @@ int help() {
     puts("");
     puts("  --desktop-background PATH  Show the right part of PATH in "
             "the background");
+    puts("  --darken, --lighten        Tint the background showing through");
+    puts("  --adjust-text              Lighten or darken text alongside "
+            "above options");
     puts("  --geometry GEOM            Set the size and position from GEOM");
     puts("  --role TEXT                Set WM_WINDOW_ROLE to TEXT");
     puts("  --decorate                 Show window manager decorations");
@@ -223,6 +252,12 @@ int main (int argc, char **argv) {
             role = argv[++i];
         else if (strcmp(argv[i], "--allow-shell") == 0)
             allow_shell = true;
+        else if (strcmp(argv[i], "--darken") == 0)
+            background_tint = "black";
+        else if (strcmp(argv[i], "--lighten") == 0)
+            background_tint = "white";
+        else if (strcmp(argv[i], "--adjust-text") == 0)
+            adjust_text = true;
         else if (strcmp(argv[i], "--decorate") == 0)
             undecorated = false;
         else if (strcmp(argv[i], "--version") == 0)

@@ -15,6 +15,13 @@ options allow customising the display:
     option is specified. If the widget window is moved, the background
     image will update. If the image itself changes it will be reloaded
     within a few seconds.
+  --darken
+  --lighten
+    Tint the background image showing through. The background will be
+    darkened or lightened 25%.
+  --adjust-text
+    In conjunction with --darken or --lighten, changes the default text
+    color of the displayed web page to white or black respectively.
   --allow-shell
     Permit the extension "shell:" protocol, which will trigger system
     command execution when navigated to. If this option is given, this
