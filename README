@@ -13,6 +13,14 @@ options allow customising the display:
     Set the height or width of the widget to the given number of pixels.
   --decorate
     Show the window manager decorations (which are usually hidden).
+  --allow-shell
+    Permit the extension "shell:" protocol, which will trigger system
+    command execution when navigated to. If this option is given, this
+    HTML code:
+      <a href="shell:xmessage 'Hello, world!'">Run</a>
+    will generate a link that, when clicked, pops up a system message
+    box with the given message. If you do not have total control over
+    the web page being displayed, this presents a security problem.
   --desktop-background PATH
     Use PATH as the desktop background image. This image must be the
     same size as the desktop. The widget will display the part of the

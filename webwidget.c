@@ -44,6 +44,8 @@ time_t background_mtime;
 
 char *uri = "webwidget:";
 
+bool allow_shell = 0;
+
 void do_quit(GtkWidget *widget, gpointer data) {
     exit(0);
 }
@@ -142,6 +144,34 @@ void webwidget_scheme_callback(WebKitURISchemeRequest *request,
     g_object_unref(stream);
 }
 
+void runshell(char *cmd) {
+    if (!fork()) {
+        execlp("sh", "sh", "-c", cmd, NULL);
+    }
+}
+
+// Determines whether to navigate to a given URL; also used for
+// shell: protocol.
+gboolean handle_policy(WebKitWebView *web_view,
+        WebKitNavigationPolicyDecision *policy_decision,
+        WebKitPolicyDecisionType decision_type, gpointer user_data) {
+    if (decision_type != WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION)
+        return false;
+    if (!allow_shell)
+        return false;
+    WebKitURIRequest *request = webkit_navigation_policy_decision_get_request(policy_decision);
+    const gchar *uri = webkit_uri_request_get_uri(request);
+    if (uri[0] == 's' && uri[1] == 'h' && uri[2] == 'e'
+            && uri[3] == 'l' && uri[4] == 'l' && uri[5] == ':') {
+        char buf[strlen(uri) + 1];
+        webkit_policy_decision_ignore(WEBKIT_POLICY_DECISION(policy_decision));
+        urldecode(buf, uri + 6);
+        runshell(buf);
+        return true;
+    }
+    return false;
+}
+
 // Re-run the background setter when the page loads.
 void load_changed(WebKitWebView  *web_view,
         WebKitLoadEvent load_event, gpointer user_data) {
@@ -158,6 +188,8 @@ int help() {
     puts("  --width WIDTH              Make the widget WIDTH pixels wide");
     puts("  --height HEIGHT            Make the widget HEIGHT pixels high");
     puts("  --decorate                 Show window manager decorations");
+    puts("  --allow-shell              Permit shell: protocol command "
+            "execution");
     puts("  --help                     Display this help and exit");
     puts("  --version                  Print version information and exit");
     puts("");
@@ -189,6 +221,8 @@ int main (int argc, char **argv) {
             width = atoi(argv[++i]);
         else if (strcmp(argv[i], "--height") == 0)
             height = atoi(argv[++i]);
+        else if (strcmp(argv[i], "--allow-shell") == 0)
+            allow_shell = true;
         else if (strcmp(argv[i], "--decorate") == 0)
             undecorated = false;
         else if (strcmp(argv[i], "--version") == 0)
@@ -222,6 +256,8 @@ int main (int argc, char **argv) {
 
     // Triggers when page-load completed
     g_signal_connect(webkit, "load-changed", G_CALLBACK(load_changed), NULL);
+    // Decide whether to allow accessing URL, and handle shell: scheme.
+    g_signal_connect(webkit, "decide-policy", G_CALLBACK(handle_policy), NULL);
 
     // Create desktop-background:// and webwidget: URI schemes
     WebKitWebContext *context = webkit_web_view_get_context(
