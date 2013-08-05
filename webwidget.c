@@ -195,7 +195,10 @@ int main (int argc, char **argv) {
             exit(version());
         else if (strcmp(argv[i], "--help") == 0)
             exit(help());
-        else
+        else if (argv[i][0] == '-') {
+            fprintf(stderr, "webwidget: unknown option %s.\n", argv[i]);
+            exit(1);
+        } else
             uri = argv[i];
     }
 
