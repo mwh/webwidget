@@ -219,6 +219,8 @@ int help() {
     puts("  --decorate                 Show window manager decorations");
     puts("  --allow-shell              Permit shell: protocol command "
             "execution");
+    puts("  --stdin-js                 Read and execute code up to EOF on "
+            "standard input");
     puts("  --help                     Display this help and exit");
     puts("  --version                  Print version information and exit");
     puts("");
@@ -235,6 +237,16 @@ int version() {
     return 0;
 }
 
+gboolean read_stdin_line(GIOChannel *source, GIOCondition condition,
+        gpointer data) {
+    gchar *str_return;
+    g_io_channel_read_to_end(source, &str_return, NULL, NULL);
+    if (str_return) {
+        webkit_web_view_run_javascript(WEBKIT_WEB_VIEW(webkit), str_return, NULL, NULL, NULL);
+    }
+    return true;
+}
+
 int main (int argc, char **argv) {
     progname = argv[0];
     GtkAccelGroup *accelgroup;
@@ -243,6 +255,7 @@ int main (int argc, char **argv) {
     bool undecorated = true;
     char *role = NULL;
     char *geometry = "250x120";
+    bool stdin_js;
     for (int i=1; i<argc; i++) {
         if (strcmp(argv[i], "--desktop-background") == 0)
             background_path = argv[++i];
@@ -258,6 +271,8 @@ int main (int argc, char **argv) {
             background_tint = "white";
         else if (strcmp(argv[i], "--adjust-text") == 0)
             adjust_text = true;
+        else if (strcmp(argv[i], "--stdin-js") == 0)
+            stdin_js = true;
         else if (strcmp(argv[i], "--decorate") == 0)
             undecorated = false;
         else if (strcmp(argv[i], "--version") == 0)
@@ -330,6 +345,13 @@ int main (int argc, char **argv) {
     // We check whether the desktop background has changed every 5 seconds
     if (background_path)
         g_timeout_add_seconds(5, timeout, NULL);
+
+    // If --stdin-js was given, we will read JavaScript lines on stdin
+    // and execute them.
+    if (stdin_js) {
+        GIOChannel *ioc = g_io_channel_unix_new(0);
+        g_io_add_watch(ioc, G_IO_IN, &read_stdin_line, NULL);
+    }
 
     gtk_main();
  
